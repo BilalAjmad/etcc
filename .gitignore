@@ -1,0 +1,47 @@
+# Flutter build / generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/app/src/main/assets/
+android/key.jks
+android/local.properties
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+
+# iOS / macOS
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+*.app
+*.framework
+*.dSYM
+
+# Linux / Windows
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# Node / Web build logs
+node_modules/
+*.log
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/

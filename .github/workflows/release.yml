@@ -1,4 +1,4 @@
-name: Build Multi-Platform Releases for Local AI Cam For Mobile
+name: Build & Release All Platform Installers
 
 on:
   push:
@@ -7,81 +7,91 @@ on:
       - master
     tags:
       - 'v*'
+  release:
+    types: [published, created]
   workflow_dispatch:
 
 jobs:
   build-android-apk:
-    name: Build Android Direct APK
+    name: Build Direct Android APK
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: subosito/flutter-action@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter pub get
-      - run: flutter build apk --release
-      - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/local-ai-cam-android-installer.apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: local-ai-cam-android-apk
-          path: build/app/outputs/flutter-apk/local-ai-cam-android-installer.apk
-      - name: Release APK
-        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Android Release APK
+        run: flutter build apk --release
+
+      - name: Prepare Android APK Asset
+        run: cp build/app/outputs/flutter-apk/app-release.apk local-ai-cam-android-installer.apk
+
+      - name: Upload APK to Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/local-ai-cam-android-installer.apk
+          files: local-ai-cam-android-installer.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-web:
-    name: Build Web Dashboard App
+  build-web-and-linux:
+    name: Build Web & Linux Desktop Apps
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-      - run: flutter pub get
-      - run: flutter build web --release
-      - run: cd build/web && zip -r ../../local-ai-cam-web.zip .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: local-ai-cam-web
-          path: local-ai-cam-web.zip
-      - name: Release Web Asset
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: local-ai-cam-web.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-linux:
-    name: Build Linux Desktop App
-    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
-      - uses: subosito/flutter-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter config --enable-linux-desktop
-      - run: flutter pub get
-      - run: flutter build linux --release
-      - run: cd build/linux/x64/release/bundle && zip -r ../../../../../local-ai-cam-linux.zip .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: local-ai-cam-linux
-          path: local-ai-cam-linux.zip
-      - name: Release Linux Asset
-        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Web App
+        run: flutter build web --release
+
+      - name: Package Web Asset
+        run: cd build/web && zip -r ../../local-ai-cam-web.zip .
+
+      - name: Install Linux Build Dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
+      - name: Enable Linux Desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Build Linux Desktop
+        run: flutter build linux --release
+
+      - name: Package Linux Asset
+        run: cd build/linux/x64/release/bundle && zip -r ../../../../../local-ai-cam-linux.zip .
+
+      - name: Upload Web & Linux to Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: local-ai-cam-linux.zip
+          files: |
+            local-ai-cam-web.zip
+            local-ai-cam-linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

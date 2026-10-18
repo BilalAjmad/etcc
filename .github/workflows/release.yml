@@ -1,4 +1,4 @@
-name: Build & Release Smart AI CCTV APK
+name: Build Multi-Platform Releases for Local AI Cam For Mobile
 
 on:
   push:
@@ -10,41 +10,78 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
-    name: Build Android Release APK
+  build-android-apk:
+    name: Build Android Direct APK
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java JDK
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Build Release APK
-        run: flutter build apk --release
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/local-ai-cam-android-installer.apk
+      - uses: actions/upload-artifact@v4
         with:
-          name: smart-ai-cctv-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Create GitHub Release & Attach APK
+          name: local-ai-cam-android-apk
+          path: build/app/outputs/flutter-apk/local-ai-cam-android-installer.apk
+      - name: Release APK
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/local-ai-cam-android-installer.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-web:
+    name: Build Web Dashboard App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build web --release
+      - run: cd build/web && zip -r ../../local-ai-cam-web.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-ai-cam-web
+          path: local-ai-cam-web.zip
+      - name: Release Web Asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: local-ai-cam-web.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+    name: Build Linux Desktop App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter config --enable-linux-desktop
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - run: cd build/linux/x64/release/bundle && zip -r ../../../../../local-ai-cam-linux.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-ai-cam-linux
+          path: local-ai-cam-linux.zip
+      - name: Release Linux Asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: local-ai-cam-linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

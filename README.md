@@ -1,6 +1,14 @@
-# Smart AI CCTV Camera App (Turn Old Mobile Phones into AI CCTV)
+# local ai cam for mobile
 
-A high-performance, 100% offline, local edge AI surveillance camera application designed to repurpose old Android mobile devices into hyper-smart CCTV security cameras.
+Turn any old unused mobile phone into a hyper-smart, 100% offline, local Edge-AI CCTV camera! Features real-time human/intruder detection, YOLOv8/MobileNetV4 vision engines, motion vector tracking, night vision HUD, and automated siren alerts — Zero cloud, zero subscription, 100% private.
+
+## Direct Release Installers & Platform Downloads
+
+When a release tag (e.g. `v1.0.0`) is published on GitHub, the automated GitHub Actions CI pipeline builds and uploads individual platform installers to **GitHub Releases Assets**:
+
+- 📱 **Android Direct APK**: `local-ai-cam-android-installer.apk` (Direct one-click APK installation on mobile)
+- 🌐 **Web App Bundle**: `local-ai-cam-web.zip`
+- 🐧 **Linux Desktop App**: `local-ai-cam-linux.zip`
 
 ## Features
 - **100% Offline & Local Execution**: Zero API keys or cloud dependencies needed. Works completely offline to protect privacy and save network bandwidth.
@@ -12,13 +20,8 @@ A high-performance, 100% offline, local edge AI surveillance camera application 
 - **Intruder & Security Threat Logs**: Automated history logging of high-confidence threats with timestamps and alert levels.
 - **Custom Sensitivity Settings**: Adjustable confidence thresholds and motion vector tracking.
 
-## Direct APK Download & GitHub Release
-This project includes a **GitHub Actions CI/CD Workflow** (`.github/workflows/release.yml`).
-
-Whenever you push to the `main` branch or publish a new version tag (e.g., `v1.0.0`), GitHub automatically builds `app-release.apk` and uploads it directly to your **GitHub Releases** page so users can download and install the APK directly on their mobile phones!
-
-### How to Build Release APK Locally
-If you want to compile the release APK on your machine:
+## How to Build Release APK Locally
+If you want to compile the release APK manually on your machine:
 ```bash
 flutter pub get
 flutter build apk --release
